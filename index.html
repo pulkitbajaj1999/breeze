@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Transform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #020617;
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Doctor Dang 1101</h1>
+
+    <form id="transformForm">
+      <label>Background (file)</label>
+      <input type="file" name="background" required />
+
+      <label>Audio (file)</label>
+      <input type="file" name="audio" required />
+
+      <label>Subtitle (file)</label>
+      <input type="file" name="subtitle" required />
+
+      <label>Password</label>
+      <input type="text" name="password" required />
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('transformForm');
+    const statusEl = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = 'Uploading and processing...';
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/api/transform', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Transformation failed');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'result';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
+        statusEl.textContent = 'Download started.';
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -34,6 +34,10 @@ async function process(backgroundPath, audioPath, subtitlePath) {
     .on('start', (commandLine) => {
       console.log('Spawned FFmpeg with command: ' + commandLine);
     })
+    .on('stderr', (stderrLine) => {
+      // This prints the actual FFmpeg console output line-by-line
+      console.log('FFmpeg Output: ' + stderrLine);
+    })
     .on('error', (err) => {
       console.error('Error: ' + err.message);
     })

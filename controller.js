@@ -9,26 +9,33 @@ async function process(backgroundPath, audioPath, subtitlePath) {
     ffmpeg()
     // 1. Input Image with Loop
     .input(backgroundPath)
-    .inputOptions(['-loop 1'])
+    .inputOptions(['-loop 1', '-framerate 15'])
     
     // 2. Input Audio
     .input(audioPath)
     
     // 3. Video Filter (Subtitles + Even Scaling)
     .videoFilters([
-      `ass=${subtitlePath}`,
-      'scale=trunc(iw/2)*2:trunc(ih/2)*2'
+      `ass=${subtitlePath}:fontsdir=fonts`,
+      'scale=trunc(iw/2)*2:trunc(ih/2)*2',
+      // 'scale=-2:480'
     ])
     
     // 4. Video Settings
     .videoCodec('libx264')
     .outputOptions([
+      '-preset veryfast',
+      '-tune stillimage', // major CPU saver
+      '-crf 30',
+      '-threads 1',
       '-pix_fmt yuv420p',
-      '-shortest' // Stop video when audio ends
+      '-shortest',
+      '-movflags +faststart'
     ])
+  
     
     // 5. Audio Settings
-    .audioCodec('aac')
+    .audioCodec('copy')
     
     // 6. Execution
     .on('start', (commandLine) => {

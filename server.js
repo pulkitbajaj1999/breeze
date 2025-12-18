@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000
 const upload = multer({ dest: 'uploads/' });
 
 const processfiles = require('./controller')
+const processSubtitleFile = require('./subtitleController')
 
 // ---- Serve index.html on / ----
 app.get('/', (req, res) => {
@@ -27,7 +28,7 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      const password = req.body.password;
+      const { password, subtitleFormat } = req.body
 
       if (!password) {
         return res.status(400).json({ error: 'Password required' });
@@ -43,9 +44,13 @@ app.post(
       if (!background || !audio || !subtitle) {
         return res.status(400).json({ error: 'Missing files' });
       }
-
+      
+      let processedSubtitlePath = subtitle?.path 
+      if (subtitleFormat == 'txt') {
+        processedSubtitlePath = processSubtitleFile(subtitle?.path)
+      }
       // process and return output path
-      let outputPath = await processfiles(background?.path, audio?.path, subtitle?.path)
+      let outputPath = await processfiles(background?.path, audio?.path, processedSubtitlePath)
 
       // ---- Simulate processing ----
       // const outputPath = path.join(__dirname, 'output.mp4');
@@ -63,6 +68,13 @@ app.post(
       });
     } catch (err) {
       console.error(err);
+      try {
+        background?.path && fs.unlinkSync(background.path)
+        audio?.path && fs.unlinkSync(audio.path)
+        subtitle?.path && fs.unlinkSync(subtitle.path)
+        outputPath && fs.unlinkSync(outputPath)
+      } catch (err) { console.log('all - paths not cleared', err.message)}
+
       res.status(500).json({ error: 'Internal server error' });
     }
   }

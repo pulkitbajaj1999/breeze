@@ -33,13 +33,14 @@
       margin-bottom: 6px;
       font-size: 14px;
     }
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #334155;
       background: #020617;
       color: #e5e7eb;
+      box-sizing: border-box;
     }
     button {
       margin-top: 18px;
@@ -76,6 +77,13 @@
 
       <label>Subtitle (file)</label>
       <input type="file" name="subtitle" required />
+
+      <label>Subtitle Format</label>
+      <select name="subtitleFormat">
+        <option value="txt" selected>txt</option>
+        <option value="srt">srt</option>
+        <option value="ass">ass</option>
+      </select>
 
       <label>Password</label>
       <input type="text" name="password" required />

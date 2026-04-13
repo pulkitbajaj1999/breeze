@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Mount our custom config over the default Nginx config
+      - ./frontend/nginx-proxy/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Mount the certificates folder
+      - ./frontend/nginx-proxy/certs:/etc/nginx/ssl:ro
+    # This line ensures host.docker.internal works correctly on Linux environments
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - PORT=3000
+        - VITE_BASE_URL=/
+        - VITE_API_BASE_URL=/api/
+
+    container_name: breeze-frontend
+    ports:
+      - 3000:80
+    volumes:
+      - ./frontend/nginx-default.conf:/etc/nginx/conf.d/default.conf:ro
+    command: ["nginx", "-g", 'daemon off;']
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          memory: 32M
